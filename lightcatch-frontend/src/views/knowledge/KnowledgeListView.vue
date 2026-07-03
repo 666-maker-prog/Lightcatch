@@ -3,7 +3,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
       <div>
         <h2 style="margin: 0 0 4px;">素材库</h2>
-        <p style="color: #64748b; margin: 0; font-size: 14px;">上传你的文章和素材，AI 将学习你的写作风格</p>
+        <p style="color: #64748b; margin: 0; font-size: 14px;">上传素材，AI 在创作时会参考其中的内容风格</p>
       </div>
       <a-button type="primary" @click="openCreate">
         <template #icon><PlusOutlined /></template>

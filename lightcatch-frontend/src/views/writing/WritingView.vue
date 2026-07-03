@@ -45,7 +45,7 @@
                 <a-select-option value="种草">🌿 种草风</a-select-option>
               </a-select>
             </a-form-item>
-            <a-form-item label="参考素材库" help="选择素材库后 AI 会模仿该库中的文章风格">
+            <a-form-item label="参考素材库" help="选择素材库后，AI 会参考其中的内容进行创作">
               <a-select v-model:value="knowledgeId" placeholder="选择素材库" allow-clear>
                 <a-select-option v-for="kb in knowledgeStore.knowledgeList" :key="kb.id" :value="kb.id">
                   {{ kb.name }}

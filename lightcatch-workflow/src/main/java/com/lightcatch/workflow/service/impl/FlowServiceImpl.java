@@ -27,22 +27,47 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    // LLM-generated type -> LiteFlow component ID mapping
+    private static final java.util.Map<String, String> TYPE_TO_LITEFLOW = java.util.Map.of(
+        "knowledge", "Knowledge_Node",
+        "llm", "LLM_Node"
+    );
+
     @Override
     public String executeFlow(String flowId, String input) throws Exception {
         AiFlow flow = getById(flowId);
         if (flow == null) throw new Exception("流程不存在: " + flowId);
         log.info("Executing flow: {} with input: {}", flow.getName(), input);
 
-        String chain = flow.getChain();
-        if (chain == null || chain.isEmpty()) {
+        // Parse the design JSON to get node types
+        String designStr = flow.getDesign();
+        if (designStr == null || designStr.isEmpty()) {
+            throw new Exception("流程「" + flow.getName() + "」缺少设计数据");
+        }
+
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> design = mapper.readValue(designStr, java.util.Map.class);
+        @SuppressWarnings("unchecked")
+        java.util.List<java.util.Map<String, Object>> nodes = (java.util.List<java.util.Map<String, Object>>) design.getOrDefault("nodes", new java.util.ArrayList<>());
+
+        if (nodes.isEmpty()) {
             throw new Exception("流程「" + flow.getName() + "」未配置任何节点");
         }
 
-        String[] nodeIds = chain.split("\\s*->\\s*");
+        // Build LiteFlow EL: filter out trigger/manual (they're logical, not actual nodes)
         StringBuilder elBuilder = new StringBuilder("THEN(");
-        for (int i = 0; i < nodeIds.length; i++) {
-            if (i > 0) elBuilder.append(",");
-            elBuilder.append(nodeIds[i].trim());
+        boolean first = true;
+        for (java.util.Map<String, Object> node : nodes) {
+            String type = (String) node.get("type");
+            String lfId = TYPE_TO_LITEFLOW.get(type);
+            if (lfId == null) continue; // skip trigger/manual/unsupported types
+            if (!first) elBuilder.append(",");
+            elBuilder.append(lfId);
+            first = false;
+        }
+        if (first) {
+            // All nodes were skipped (only trigger/manual) - just return success
+            return "流程执行完成（仅触发节点，无执行节点）";
         }
         elBuilder.append(")");
         String el = elBuilder.toString();

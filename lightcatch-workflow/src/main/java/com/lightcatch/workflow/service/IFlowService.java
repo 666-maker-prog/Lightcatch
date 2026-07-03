@@ -5,4 +5,5 @@ import com.lightcatch.workflow.entity.AiFlow;
 
 public interface IFlowService extends IService<AiFlow> {
     String executeFlow(String flowId, String input) throws Exception;
+    AiFlow generateFromText(String description) throws Exception;
 }

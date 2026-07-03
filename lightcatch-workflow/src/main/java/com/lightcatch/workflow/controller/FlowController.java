@@ -28,6 +28,20 @@ public class FlowController {
         return Result.ok();
     }
 
+    @PostMapping("/gen")
+    public Result<?> generate(@RequestBody Map<String, String> body) {
+        String description = body.get("description");
+        if (description == null || description.trim().isEmpty()) {
+            return Result.error("请描述你的创作流程");
+        }
+        try {
+            AiFlow flow = flowService.generateFromText(description);
+            return Result.ok(flow);
+        } catch (Exception e) {
+            return Result.error("解析失败: " + e.getMessage());
+        }
+    }
+
     @PutMapping("/{id}")
     public Result<?> update(@PathVariable String id, @RequestBody AiFlow flow) {
         flow.setId(id);

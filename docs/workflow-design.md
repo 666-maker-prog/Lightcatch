@@ -72,8 +72,24 @@
 ### 图片生成 — 为什么用 `OpenAiImageModel`
 LangChain4j 已封装，通义千问/DeepSeek 都兼容 OpenAI 格式，换供应商只改 URL 和模型名。
 
-### 条件判断 — 为什么用 LLM 做路由
-博主场景下的分类是模糊的（一篇文章可能既像旅游又像生活方式），LLM 能理解语义，比硬编码 if/switch 灵活。
+### 条件判断 — 用 LLM 做路由，但不硬编码分类
+- 分类来自用户工作流描述，不预设候选列表
+- 用户在描述里写"美食类用温柔风，科技类用专业风"，LLM 解析时提取分支条件
+- 运行时把分类标准和内容一起交给 LLM，让 LLM 自由判断走哪条路
+- 没有匹配的分支就走默认路径
+- 这样才真正灵活，不是换个方式硬编码
+
+实现方式：
+```
+// ❌ 错误：硬编码分类
+String result = llm.chat("属于旅游/美食/科技？");
+if ("旅游".equals(result)) ...
+
+// ✅ 正确：分类来自工作流描述，运行时 LLM 自由判断
+String branches = workflow.getBranches(); // 用户描述里提取的
+String result = llm.chat("根据以下分类标准判断内容走哪条路：" + branches);
+slot.setChainId(result); // 没有匹配就走默认
+```
 
 ### 发送/发布 — 为什么用 OAuth2
 用户授权一次，后端存 token，后续自动发布，不需要每次手动登录。

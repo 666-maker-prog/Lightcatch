@@ -69,8 +69,20 @@
 
 ## 技术选型说明
 
-### 图片生成 — 为什么用 `OpenAiImageModel`
-LangChain4j 已封装，通义千问/DeepSeek 都兼容 OpenAI 格式，换供应商只改 URL 和模型名。
+### 图片生成 — 统一使用 OpenAI 兼容接口
+`OpenAiImageModel` 用的是 OpenAI 标准格式，国内外绝大多数模型供应商都兼容这个格式：
+
+| 供应商 | 模型 | 兼容性 | 备注 |
+|--------|------|--------|------|
+| OpenAI | DALL-E 3 | ✅ 原生 | 官方格式 |
+| 通义千问 | 通义万相 `wan2.2-t2i-flash` | ✅ 兼容 | 改 baseUrl 即可 |
+| DeepSeek | DeepSeek-Visual | ✅ 兼容 | 改 baseUrl 即可 |
+| 智谱 AI | CogView | ✅ 兼容 | 改 baseUrl 即可 |
+| Stability AI | Stable Diffusion | ⚠️ 部分兼容 | 需适配层 |
+| Midjourney | MJ | ❌ 不兼容 | 需走 MJ API 网关 |
+| Claude | 不支持图片生成 | — | Anthropic 无此能力 |
+
+**结论**：用 OpenAI 兼容格式能覆盖 90% 的主流供应商，不够的加一层适配器就行。
 
 ### 条件判断 — 功能路由，不是内容分类
 条件分支的作用是**决定下一步调用哪个功能节点**，不是给内容打标签。

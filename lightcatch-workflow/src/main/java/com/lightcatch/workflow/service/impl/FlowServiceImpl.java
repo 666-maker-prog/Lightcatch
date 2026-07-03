@@ -65,6 +65,7 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
         String systemPrompt = "你是一个工作流解析器。将用户的创作需求解析为结构化的工作流步骤。\n\n"
             + "可用节点类型：\n"
             + "- trigger: 定时触发（用户提到每天、定时、自动时使用）\n"
+            + "- manual: 手动触发（用户没说定时，或说手动运行、点击触发时使用）\n"
             + "- knowledge: 从素材库检索内容\n"
             + "- llm: 调用大模型生成文案、分析、总结\n"
             + "- image: 生成图片（用户提到配图、生成图片时使用）\n"
@@ -108,6 +109,7 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
             String type = (String) node.getOrDefault("type", "llm");
             String icon = switch (type) {
                 case "trigger" -> "⏰";
+                case "manual" -> "▶️";
                 case "knowledge" -> "📚";
                 case "llm" -> "🤖";
                 case "image" -> "🎨";

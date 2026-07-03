@@ -71,10 +71,10 @@ const inputText = ref('')
 const generating = ref(false)
 
 const nodeIcons: Record<string, string> = {
-  trigger: '⏰', knowledge: '📚', llm: '🤖', image: '🎨', web_search: '🌐', condition: '🔀',
+  trigger: '⏰', manual: '▶️', knowledge: '📚', llm: '🤖', image: '🎨', web_search: '🌐', condition: '🔀',
 }
 const nodeLabels: Record<string, string> = {
-  trigger: '定时触发', knowledge: '素材库检索', llm: 'AI 生成', image: '图片生成', web_search: '联网搜索', condition: '条件判断',
+  trigger: '定时触发', manual: '手动触发', knowledge: '素材库检索', llm: 'AI 生成', image: '图片生成', web_search: '联网搜索', condition: '条件判断',
 }
 
 function parseSteps(flow: any) {

@@ -1,0 +1,56 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: lightcatch
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lightcatch
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 3
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+      table-underline: true
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+lightcatch:
+  jwt:
+    secret: "TGlnaHRDYXRjaC1TZWNyZXQtS2V5LTIwMjYtQUktUGxhdGZvcm0tU2VjcmV0"
+    expire-seconds: 86400
+  ai:
+    default-chat-temp: 0.7
+    default-max-tokens: 4096
+    chunk-size: 500
+    chunk-overlap: 50
+    retrieval-top-k: 5
+    embedding-dimension: 1536
+    upload-path: ./upload
+
+liteflow:
+  enable: true
+  print-execution-log: false
+
+logging:
+  level:
+    com.lightcatch: DEBUG

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console 输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder><pattern>%d{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern></encoder>
+    </appender>
+
+    <!-- 文件日志（每次启动覆盖） -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/lightcatch.log</file>
+        <append>false</append>
+        <encoder><pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern></encoder>
+    </appender>
+
+    <!-- 专门记录 API 请求/响应 -->
+    <appender name="API_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/api.log</file>
+        <append>false</append>
+        <encoder><pattern>%d{HH:mm:ss.SSS} %msg%n</pattern></encoder>
+    </appender>
+
+    <logger name="com.lightcatch" level="DEBUG"/>
+    <logger name="API_LOGGER" level="DEBUG">
+        <appender-ref ref="API_FILE"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

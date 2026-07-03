@@ -1,0 +1,16 @@
+target/
+*.class
+*.jar
+*.war
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+node_modules/
+dist/
+*.log
+logs/
+data/
+.DS_Store
+Thumbs.db

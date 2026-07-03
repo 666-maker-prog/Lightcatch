@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 工作流控制器
+ * 负责工作流的 CRUD、自然语言生成、手动执行
+ */
 @RestController
 @RequestMapping("/api/ai/flow")
 public class FlowController {
@@ -16,11 +20,13 @@ public class FlowController {
     @Autowired
     private IFlowService flowService;
 
+    /** 获取所有工作流列表 */
     @GetMapping("/list")
     public Result<List<AiFlow>> list() {
         return Result.ok(flowService.list());
     }
 
+    /** 手动创建一个空工作流（不常用，主要用 gen 接口） */
     @PostMapping("/create")
     public Result<?> create(@RequestBody AiFlow flow) {
         flow.setStatus(1);
@@ -28,6 +34,11 @@ public class FlowController {
         return Result.ok();
     }
 
+    /**
+     * 自然语言生成工作流
+     * 用户输入一段文字描述（如"每天8点从素材库找爆款，写一篇小红书"），
+     * LLM 自动解析为结构化工作流并存入数据库
+     */
     @PostMapping("/gen")
     public Result<?> generate(@RequestBody Map<String, String> body) {
         String description = body.get("description");
@@ -42,6 +53,7 @@ public class FlowController {
         }
     }
 
+    /** 更新工作流名称/描述 */
     @PutMapping("/{id}")
     public Result<?> update(@PathVariable String id, @RequestBody AiFlow flow) {
         flow.setId(id);
@@ -49,12 +61,17 @@ public class FlowController {
         return Result.ok();
     }
 
+    /** 删除工作流 */
     @DeleteMapping("/{id}")
     public Result<?> delete(@PathVariable String id) {
         flowService.removeById(id);
         return Result.ok();
     }
 
+    /**
+     * 执行工作流
+     * 解析 design 字段中的节点列表，映射到 LiteFlow 组件，按依赖顺序执行
+     */
     @PostMapping("/run")
     public Result<?> runFlow(@RequestBody Map<String, Object> params) {
         String flowId = (String) params.get("flowId");

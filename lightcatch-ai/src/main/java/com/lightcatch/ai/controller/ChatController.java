@@ -16,6 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * AI 聊天控制器
+ * SSE 流式对话、对话管理、断线重连
+ */
 @RestController
 @RequestMapping("/api/ai/chat")
 public class ChatController {
@@ -25,6 +29,7 @@ public class ChatController {
     @Autowired
     private com.lightcatch.ai.mapper.AiConversationMapper conversationMapper;
 
+    /** 从 Header 或 URL 参数中提取 JWT token（EventSource 不支持自定义 Header，必须查参数） */
     private String extractToken(HttpServletRequest request) {
         String token = request.getHeader("X-Access-Token");
         if (token == null || token.isEmpty()) {

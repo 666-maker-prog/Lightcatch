@@ -27,11 +27,10 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    // LLM-generated type -> LiteFlow component ID mapping
-    private static final java.util.Map<String, String> TYPE_TO_LITEFLOW = java.util.Map.of(
-        "knowledge", "Knowledge_Node",
-        "llm", "LLM_Node"
-    );
+    @Autowired
+    private com.lightcatch.workflow.node.LLMNodeComponent llmNode;
+    @Autowired
+    private com.lightcatch.workflow.node.KnowledgeNodeComponent knowledgeNode;
 
     @Override
     public String executeFlow(String flowId, String input) throws Exception {
@@ -39,7 +38,7 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
         if (flow == null) throw new Exception("流程不存在: " + flowId);
         log.info("Executing flow: {} with input: {}", flow.getName(), input);
 
-        // Parse the design JSON to get node types
+        // 解析 design JSON 获取节点列表
         String designStr = flow.getDesign();
         if (designStr == null || designStr.isEmpty()) {
             throw new Exception("流程「" + flow.getName() + "」缺少设计数据");
@@ -54,33 +53,34 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
             throw new Exception("流程「" + flow.getName() + "」未配置任何节点");
         }
 
-        // Build LiteFlow EL: filter out trigger/manual (they're logical, not actual nodes)
-        StringBuilder elBuilder = new StringBuilder("THEN(");
-        boolean first = true;
+        // 按顺序执行每个节点（跳过 trigger/manual 等逻辑节点）
+        String currentInput = input;
         for (java.util.Map<String, Object> node : nodes) {
             String type = (String) node.get("type");
-            String lfId = TYPE_TO_LITEFLOW.get(type);
-            if (lfId == null) continue; // skip trigger/manual/unsupported types
-            if (!first) elBuilder.append(",");
-            elBuilder.append(lfId);
-            first = false;
-        }
-        if (first) {
-            // All nodes were skipped (only trigger/manual) - just return success
-            return "流程执行完成（仅触发节点，无执行节点）";
-        }
-        elBuilder.append(")");
-        String el = elBuilder.toString();
-        log.info("LiteFlow EL: {}", el);
+            log.info("Executing node: type={}, name={}", type, node.get("name"));
 
-        LiteflowResponse response = flowExecutor.execute2Resp(el, null, input);
-        if (response.isSuccess()) {
-            log.info("Flow execution completed successfully");
-            return "流程执行完成";
-        } else {
-            log.error("Flow execution failed: {}", response.getMessage());
-            throw new Exception("流程执行失败: " + response.getMessage());
+            switch (type) {
+                case "knowledge":
+                    // 知识库检索节点：用当前输入搜索素材库
+                    currentInput = knowledgeNode.execute(currentInput);
+                    break;
+                case "llm":
+                    // LLM 生成节点：用当前输入调用大模型
+                    currentInput = llmNode.execute(currentInput);
+                    break;
+                case "trigger":
+                case "manual":
+                case "image":
+                case "web_search":
+                case "condition":
+                default:
+                    // 暂不支持的节点类型，跳过
+                    log.warn("Node type '{}' not supported yet, skipping", type);
+                    break;
+            }
         }
+
+        return "流程执行完成";
     }
 
     @Override

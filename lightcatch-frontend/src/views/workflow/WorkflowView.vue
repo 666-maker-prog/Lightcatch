@@ -103,7 +103,7 @@ async function generateFlow() {
   if (!desc) { message.error('请描述你的创作流程'); return }
   generating.value = true
   try {
-    const res = await request.post('/ai/wf/gen', { description: desc })
+    const res = await request.post('/ai/flow/gen', { description: desc })
     message.success('工作流生成成功')
     inputText.value = ''
     await fetchFlows()

@@ -31,6 +31,8 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
     private com.lightcatch.workflow.node.LLMNodeComponent llmNode;
     @Autowired
     private com.lightcatch.workflow.node.KnowledgeNodeComponent knowledgeNode;
+    @Autowired
+    private com.lightcatch.workflow.mapper.AiFlowOutputMapper flowOutputMapper;
 
     @Override
     public String executeFlow(String flowId, String input) throws Exception {
@@ -61,11 +63,9 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
 
             switch (type) {
                 case "knowledge":
-                    // 知识库检索节点：用当前输入搜索素材库
                     currentInput = knowledgeNode.execute(currentInput);
                     break;
                 case "llm":
-                    // LLM 生成节点：用当前输入调用大模型
                     currentInput = llmNode.execute(currentInput);
                     break;
                 case "trigger":
@@ -74,10 +74,26 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
                 case "web_search":
                 case "condition":
                 default:
-                    // 暂不支持的节点类型，跳过
                     log.warn("Node type '{}' not supported yet, skipping", type);
                     break;
             }
+        }
+
+        // 保存执行结果到草稿箱
+        try {
+            com.lightcatch.workflow.entity.AiFlowOutput output = new com.lightcatch.workflow.entity.AiFlowOutput();
+            output.setId(java.util.UUID.randomUUID().toString().replace("-", ""));
+            output.setFlowId(flowId);
+            output.setUserId(input); // placeholder, will be overridden if caller sets userId
+            output.setTitle("来自「" + flow.getName() + "」的创作");
+            output.setContent(currentInput);
+            output.setMedia("[]");
+            output.setPlatforms("[]");
+            output.setStatus(0);
+            flowOutputMapper.insert(output);
+            log.info("Saved output: {} for flow: {}", output.getId(), flowId);
+        } catch (Exception e) {
+            log.warn("Failed to save output: {}", e.getMessage());
         }
 
         return "流程执行完成";

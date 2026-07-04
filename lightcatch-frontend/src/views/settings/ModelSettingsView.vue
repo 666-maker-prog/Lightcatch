@@ -11,42 +11,41 @@
     </div>
 
     <!-- 按类型分组 -->
-    <a-tabs v-model:activeKey="activeTab">
-      <a-tab-pane key="all" tab="全部">
-        <a-table :data-source="filteredModels" :columns="columns" row-key="id" :loading="loading" :pagination="false" size="small">
-          <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'modelType'">
-              <a-tag :color="typeColor(record.modelType)">{{ typeLabel(record.modelType) }}</a-tag>
-            </template>
-            <template v-if="column.key === 'status'">
-              <a-switch :checked="record.status === 1" @change="toggleStatus(record)" size="small" />
-            </template>
-            <template v-if="column.key === 'default'">
-              <a-tag v-if="record.isDefault" color="gold">默认</a-tag>
-              <a-button v-else size="small" type="link" @click="setDefault(record)">设为默认</a-button>
-            </template>
-            <template v-if="column.key === 'actions'">
-              <a-space size="small">
-                <a-button size="small" @click="testModel(record)">
-                  <template #icon><ExperimentOutlined /></template>测试
-                </a-button>
-                <a-button size="small" @click="editModel(record)">
-                  <template #icon><EditOutlined /></template>
-                </a-button>
-                <a-button size="small" danger @click="deleteModel(record)">
-                  <template #icon><DeleteOutlined /></template>
-                </a-button>
-              </a-space>
-            </template>
-          </template>
-        </a-table>
-      </a-tab-pane>
-      <a-tab-pane key="chat" tab="💬 对话"></a-tab-pane>
-      <a-tab-pane key="embedding" tab="📐 向量嵌入"></a-tab-pane>
-      <a-tab-pane key="image" tab="🎨 图片"></a-tab-pane>
-      <a-tab-pane key="voice" tab="🔊 语音"></a-tab-pane>
-      <a-tab-pane key="video" tab="🎬 视频"></a-tab-pane>
+    <a-tabs v-model:activeKey="activeTab" style="margin-bottom:16px;">
+      <a-tab-pane key="all" tab="全部" />
+      <a-tab-pane key="chat" tab="💬 对话" />
+      <a-tab-pane key="embedding" tab="📐 向量嵌入" />
+      <a-tab-pane key="image" tab="🎨 图片" />
+      <a-tab-pane key="voice" tab="🔊 语音" />
+      <a-tab-pane key="video" tab="🎬 视频" />
     </a-tabs>
+    <a-table :data-source="filteredModels" :columns="columns" row-key="id" :loading="loading" :pagination="false" size="small">
+      <template #bodyCell="{ column, record }">
+        <template v-if="column.key === 'modelType'">
+          <a-tag :color="typeColor(record.modelType)">{{ typeLabel(record.modelType) }}</a-tag>
+        </template>
+        <template v-if="column.key === 'status'">
+          <a-switch :checked="record.status === 1" @change="toggleStatus(record)" size="small" />
+        </template>
+        <template v-if="column.key === 'default'">
+          <a-tag v-if="record.isDefault" color="gold">默认</a-tag>
+          <a-button v-else size="small" type="link" @click="setDefault(record)">设为默认</a-button>
+        </template>
+        <template v-if="column.key === 'actions'">
+          <a-space size="small">
+            <a-button size="small" @click="testModel(record)">
+              <template #icon><ExperimentOutlined /></template>测试
+            </a-button>
+            <a-button size="small" @click="editModel(record)">
+              <template #icon><EditOutlined /></template>
+            </a-button>
+            <a-button size="small" danger @click="deleteModel(record)">
+              <template #icon><DeleteOutlined /></template>
+            </a-button>
+          </a-space>
+        </template>
+      </template>
+    </a-table>
 
     <!-- 添加/编辑 Modal -->
     <a-modal v-model:open="showModal" :title="editing ? '编辑模型' : '添加模型'" @ok="handleSubmit" :confirm-loading="submitting" width="640px">

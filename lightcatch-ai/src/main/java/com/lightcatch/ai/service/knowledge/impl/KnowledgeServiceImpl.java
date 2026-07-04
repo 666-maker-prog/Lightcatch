@@ -57,7 +57,6 @@ public class KnowledgeServiceImpl extends ServiceImpl<AiKnowledgeMapper, AiKnowl
             doc.setWordCount(content.length());
             doc.setStatus(0); // Processing
             doc.setUserId(userId);
-            doc.setCreateBy(userId);
             docMapper.insert(doc);
 
             // Start embedding async (simplified - sync for now)

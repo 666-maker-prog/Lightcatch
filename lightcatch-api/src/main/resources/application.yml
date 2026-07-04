@@ -32,7 +32,6 @@ mybatis-plus:
       table-underline: true
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 lightcatch:
   jwt:

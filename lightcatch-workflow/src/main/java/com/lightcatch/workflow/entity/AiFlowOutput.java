@@ -13,7 +13,6 @@ public class AiFlowOutput {
     private String userId;
     private String title;
     private String content;
-    private String media;
     private String platforms;
     private Integer status;
     @TableField(fill = FieldFill.INSERT)

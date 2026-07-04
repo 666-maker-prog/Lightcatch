@@ -55,6 +55,13 @@ public class ModelFactory {
             model = modelService.getDefaultEmbeddingModel();
         }
         if (model == null) {
+            // 没有默认模型时，取第一个可用的向量模型
+            java.util.List<com.lightcatch.ai.entity.AiModel> models = modelService.findByType(com.lightcatch.common.constant.AiConstants.MODEL_TYPE_EMBED);
+            if (!models.isEmpty()) {
+                model = models.get(0);
+            }
+        }
+        if (model == null) {
             throw new BusinessException("未配置向量模型，请先在「模型管理」中添加并激活一个向量模型");
         }
         if (model.getApiKey() == null || model.getApiKey().isEmpty()) {

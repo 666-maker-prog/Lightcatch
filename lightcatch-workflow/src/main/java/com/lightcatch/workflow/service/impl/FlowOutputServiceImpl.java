@@ -37,7 +37,6 @@ public class FlowOutputServiceImpl extends ServiceImpl<AiFlowOutputMapper, AiFlo
         output.setUserId(userId);
         output.setTitle(flow != null ? flow.getName() : "未命名");
         output.setContent(content);
-        output.setMedia("[]");
         output.setPlatforms("[]");
         output.setStatus(0);
         save(output);

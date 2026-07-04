@@ -18,7 +18,6 @@ public class SysUser {
     private String phone;
     private String email;
     private String tenantId;
-    private String createBy;
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
     private String updateBy;

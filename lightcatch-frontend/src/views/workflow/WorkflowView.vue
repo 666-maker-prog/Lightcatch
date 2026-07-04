@@ -57,18 +57,40 @@
         </div>
       </div>
     </div>
+
+    <!-- 运行工作流入参弹窗 -->
+    <div v-if="showRunModal" class="doc-overlay" @click.self="showRunModal = false">
+      <div class="doc-panel" style="width:500px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 style="margin:0;">运行工作流</h3>
+          <button @click="showRunModal = false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">✕</button>
+        </div>
+        <p style="color:#64748b;font-size:13px;margin-bottom:12px;">输入内容或关键词，AI 会基于此生成</p>
+        <textarea v-model="runInput" placeholder="选填，补充额外的创作要求"
+          style="width:100%;min-height:100px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:14px;resize:vertical;" />
+        <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">
+          <button @click="showRunModal = false"
+            style="padding:8px 20px;border:1px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;">取消</button>
+          <button @click="confirmRun"
+            style="padding:8px 20px;background:#7c3aed;color:white;border:none;border-radius:8px;cursor:pointer;">开始运行</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { message } from 'ant-design-vue'
 import { ApartmentOutlined, RobotOutlined, CaretRightOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 import request from '@/utils/request'
-import { message } from 'ant-design-vue'
 
 const flows = ref<any[]>([])
 const inputText = ref('')
 const generating = ref(false)
+const showRunModal = ref(false)
+const runInput = ref('')
+const runningFlow = ref<any>(null)
 
 const nodeIcons: Record<string, string> = {
   trigger: '⏰', manual: '▶️', knowledge: '📚', llm: '🤖', image: '🎨', web_search: '🌐', condition: '🔀',
@@ -116,12 +138,22 @@ async function fetchFlows() {
   try { const res = await request.get('/ai/flow/list'); flows.value = res.data || [] } catch {}
 }
 
-async function runFlow(flow: any) {
-  message.loading({ content: '正在运行...', key: 'flow' })
+function runFlow(flow: any) {
+  runningFlow.value = flow
+  runInput.value = flow.description || ''
+  showRunModal.value = true
+}
+
+async function confirmRun() {
+  if (!runningFlow.value) return
+  const input = runInput.value.trim()
+  message.loading({ content: 'AI 正在创作中，约需 10-30 秒...', key: 'flow', duration: 0 })
   try {
-    const res = await request.post('/ai/flow/run', { flowId: flow.id, input: 'test' })
+    const res = await request.post('/ai/flow/run', { flowId: runningFlow.value.id, input })
     message.destroy('flow')
-    message.success('结果: ' + (res.data || '完成'))
+    message.success({ content: '✅ 生成完成！已保存到草稿箱', duration: 5 })
+    showRunModal.value = false
+    await fetchFlows()
   } catch (e: any) { message.destroy('flow'); message.error(e.message || '运行失败') }
 }
 
@@ -161,4 +193,6 @@ onMounted(fetchFlows)
   width: 2px; height: calc(100% - 36px);
   background: #e2e8f0;
 }
+.doc-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.doc-panel { background: white; border-radius: 12px; padding: 24px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
 </style>

@@ -22,7 +22,6 @@ public class AiModel {
     private Integer status;
     private String tenantId;
     private String userId;
-    private String createBy;
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
     private Date updateTime;

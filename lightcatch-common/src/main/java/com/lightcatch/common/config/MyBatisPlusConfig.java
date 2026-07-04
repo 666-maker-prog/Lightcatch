@@ -15,7 +15,7 @@ import java.util.List;
 
 @Configuration
 public class MyBatisPlusConfig {
-    private static final List<String> IGNORE_TABLES = Arrays.asList("sys_tenant");
+    private static final List<String> IGNORE_TABLES = Arrays.asList("sys_tenant", "ai_flow_output");
 
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {

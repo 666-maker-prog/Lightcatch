@@ -78,7 +78,7 @@ public class EmbeddingServiceImpl implements IEmbeddingService {
 
                 // Store vector in memory + file
                 vectorStore.insert(chunk.getId(), docId, knowledgeId, chunkText,
-                        index, doc.getCreateBy(), vector);
+                        index, doc.getUserId(), vector);
                 index++;
             }
 

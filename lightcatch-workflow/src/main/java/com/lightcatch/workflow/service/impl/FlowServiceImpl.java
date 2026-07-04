@@ -35,7 +35,7 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
     private com.lightcatch.workflow.mapper.AiFlowOutputMapper flowOutputMapper;
 
     @Override
-    public String executeFlow(String flowId, String input) throws Exception {
+    public String executeFlow(String flowId, String input, String userId) throws Exception {
         AiFlow flow = getById(flowId);
         if (flow == null) throw new Exception("流程不存在: " + flowId);
         log.info("Executing flow: {} with input: {}", flow.getName(), input);
@@ -55,8 +55,11 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
             throw new Exception("流程「" + flow.getName() + "」未配置任何节点");
         }
 
-        // 按顺序执行每个节点（跳过 trigger/manual 等逻辑节点）
+        // 没有输入时，用工作流描述作为默认生成内容
         String currentInput = input;
+        if (currentInput == null || currentInput.isEmpty() || "写一篇内容".equals(currentInput)) {
+            currentInput = flow.getDescription();
+        }
         for (java.util.Map<String, Object> node : nodes) {
             String type = (String) node.get("type");
             log.info("Executing node: type={}, name={}", type, node.get("name"));
@@ -84,10 +87,11 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
             com.lightcatch.workflow.entity.AiFlowOutput output = new com.lightcatch.workflow.entity.AiFlowOutput();
             output.setId(java.util.UUID.randomUUID().toString().replace("-", ""));
             output.setFlowId(flowId);
-            output.setUserId(input); // placeholder, will be overridden if caller sets userId
-            output.setTitle("来自「" + flow.getName() + "」的创作");
+            output.setUserId(userId);
+            // 从生成内容中提取标题（第一个 # 标题，或第一行）
+            String extractedTitle = extractTitle(currentInput);
+            output.setTitle(extractedTitle);
             output.setContent(currentInput);
-            output.setMedia("[]");
             output.setPlatforms("[]");
             output.setStatus(0);
             flowOutputMapper.insert(output);
@@ -99,8 +103,29 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
         return "流程执行完成";
     }
 
+    /** 从 LLM 输出中提取标题 */
+    private String extractTitle(String content) {
+        if (content == null) return "未命名内容";
+        String[] lines = content.split("\n");
+        // 找第一个 # 开头的 Markdown 标题
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.startsWith("# ")) {
+                return trimmed.replaceAll("^#+\\s*", "").trim();
+            }
+        }
+        // 没有 # 标题，取第一行非空内容（最多 40 字）
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (!trimmed.isEmpty()) {
+                return trimmed.length() > 40 ? trimmed.substring(0, 40) + "..." : trimmed;
+            }
+        }
+        return "未命名内容";
+    }
+
     @Override
-    public AiFlow generateFromText(String description) throws Exception {
+    public AiFlow generateFromText(String description, String userId) throws Exception {
         ChatModel llm = modelFactory.createChatModel((String) null);
 
         String systemPrompt = "你是一个工作流解析器。将用户的创作需求解析为结构化的工作流步骤。\n\n"
@@ -169,6 +194,8 @@ public class FlowServiceImpl extends ServiceImpl<AiFlowMapper, AiFlow> implement
         flow.setDesign(mapper.writeValueAsString(parsed));
         flow.setType("generated");
         flow.setStatus(1);
+        flow.setUserId(userId);
+        flow.setTenantId("0");
         save(flow);
 
         log.info("Generated workflow: {} with {} steps", flow.getName(), nodes.size());

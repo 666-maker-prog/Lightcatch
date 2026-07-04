@@ -46,6 +46,12 @@ const router = createRouter({
           meta: { title: '工作流' },
         },
         {
+          path: 'drafts',
+          name: 'Drafts',
+          component: () => import('@/views/drafts/DraftsView.vue'),
+          meta: { title: '草稿箱' },
+        },
+        {
           path: 'settings/models',
           name: 'ModelSettings',
           component: () => import('@/views/settings/ModelSettingsView.vue'),

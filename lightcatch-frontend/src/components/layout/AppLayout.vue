@@ -52,6 +52,10 @@
           <template #icon><ApartmentOutlined style="font-size: 18px" /></template>
           <span>工作流</span>
         </a-menu-item>
+        <a-menu-item key="drafts" @click="router.push('/drafts')">
+          <template #icon><FileTextOutlined style="font-size: 18px" /></template>
+          <span>草稿箱</span>
+        </a-menu-item>
         <a-menu-divider style="background: rgba(255,255,255,0.1); margin: 8px 16px" />
         <a-menu-item key="settings" @click="router.push('/settings/models')">
           <template #icon><SettingOutlined style="font-size: 18px" /></template>
@@ -97,7 +101,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   MessageOutlined, DatabaseOutlined, EditOutlined,
-  ApartmentOutlined, SettingOutlined,
+  ApartmentOutlined, SettingOutlined, FileTextOutlined,
   MenuFoldOutlined, MenuUnfoldOutlined, LogoutOutlined,
 } from '@ant-design/icons-vue'
 import { useAuthStore } from '@/stores/auth'
